@@ -26,15 +26,25 @@ def heat_kernel(kernel_size, delta):
 
 def heat_kernel_convolution(image, kernel):
     """Compute heat kernel convolution on input image"""
+    # Normalize the image
+    image = image/255
     # Apply kernel convolution to image
-    heat_convoluted = cv.filter2D(image, -1, kernel=kernel)
+    # heat_convoluted = cv.filter2D(image, -1, kernel=kernel)
+    i,j = kernel.shape
+    padding = i//2
+    inputs = np.pad(image, (padding,padding), constant_values=0)
+    heat_convoluted = np.zeros(shape=image.shape)
+    for x in range(image.shape[0]):
+        for y in range(image.shape[1]):  
+            heat_convoluted[x, y] = np.sum(np.multiply(inputs[x: x + i, y: y + j], kernel))
     heat_convoluted = heat_convoluted.astype(float)
 
     # Set values above 0.5 to 1 and below to 0
-    heat_convoluted[heat_convoluted > 0.1] = 1
-    heat_convoluted[heat_convoluted <= 0.1] = 0
+    heat_convoluted[heat_convoluted > 0.5] = 1
+    heat_convoluted[heat_convoluted <= 0.5] = 0
 
     return heat_convoluted
+    
 
 def heat_diffusion(image, kernel, lapse=10):
   """Apply heat diffusion on image over a period"""
